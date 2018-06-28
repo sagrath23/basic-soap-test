@@ -1,4 +1,4 @@
-Express & ES6 REST API Boilerplate
+Express & ES6 Github API v. 4 Boilerplate
 ==================================
 
 This is a straightforward boilerplate for building REST APIs with ES6 and Express.
