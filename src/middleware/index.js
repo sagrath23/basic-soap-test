@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { fetch } from 'whatwg-fetch';
+import fetch from 'node-fetch';
+
 
 const endpoint = 'https://api.github.com/graphql';
 
