@@ -1,9 +1,8 @@
-import { Router } from 'express';
 import { fetch } from 'whatwg-fetch';
 
 const endpoint = 'https://api.github.com/graphql';
 
-export const asyncMiddleware = async () => {
+export const getRepoInfo = async () => {
     const { status, body } = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,14 +26,6 @@ export const asyncMiddleware = async () => {
             }
           }`})
     });
-    console.log(body, 'body in middleware');
+    console.log(body, 'body');
     return {status, body};
 };
-
-export default ({ config, db }) => {
-	let routes = Router();
-
-	// add middleware here
-
-	return routes;
-}
