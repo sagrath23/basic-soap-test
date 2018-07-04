@@ -11,13 +11,12 @@ export default ({ config, db }) => {
 
 	//graphql resources
 	api.use('/graphql', asyncMiddleware, (req, res) => {
-		res.json({});
+		res.json({test: 'Hi!!!'});
 	});
 
 	// perhaps expose some API metadata at the root
 	api.get('/', (req, res) => {
 		res.json({ version });
-		// GraphQL endpoint: https://api.github.com/graphql
 	});
 
 	return api;

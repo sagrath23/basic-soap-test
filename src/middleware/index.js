@@ -7,7 +7,8 @@ const endpoint = 'https://api.github.com/graphql';
 export const asyncMiddleware = async () => {
     const { status, body } = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+			'Content-Type': 'application/json',
         body: JSON.stringify({query: `viewer {
             repositories(first: 100) {
               edges {
@@ -27,7 +28,8 @@ export const asyncMiddleware = async () => {
               }
             }
           }`})
-    });
+	});
+	console.log(status, 'status in middleware');
     console.log(body, 'body in middleware');
     return {status, body};
 };
