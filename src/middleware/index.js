@@ -5,7 +5,7 @@ import config from '../config.json';
 
 const endpoint = `https://api.github.com/graphql?access_token=${config.githubToken}`;
 
-export const asyncMiddleware = async () => {
+export const asyncMiddleware = async (req, res, next) => {
   const client = new GraphQLClient(endpoint,{
     headers: {
       Authorization: `bearer ${config.githubToken}`
@@ -23,9 +23,9 @@ export const asyncMiddleware = async () => {
     }
   }`;
 
-  const result = await client.request(query);
+  req.githubResponse = await client.request(query);
 
-  return result;
+  next();
 };
 
 export default ({ config, db }) => {
