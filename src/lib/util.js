@@ -34,12 +34,19 @@ export const getBasicInfoFromGithub = async () => {
 	  {query: 
 		viewer {
 		  repositories(first: 100) {
+			totalCount
 			nodes {
-			  name
+				nameWithOwner
+				refs (first: 100, refPrefix:"refs/heads/"){
+					nodes {
+					  name
+					  id
+					}
+				} 
 			}
 		  }
 		}
 	  }`;
-	
+
 	return await client.request(query);
 };
