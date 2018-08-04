@@ -11,7 +11,6 @@ export default ({ config, db }) => {
 
 	//graphql resources
 	api.use('/graphql', asyncMiddleware, (req, res) => {
-		console.log(req.githubResponse, 'in API!!!');
 		res.json({test: req.githubResponse});
 	});
 

@@ -1,29 +1,9 @@
 import { Router } from 'express';
-import { GraphQLClient } from 'graphql-request';
-import config from '../config.json';
-
-
-const endpoint = `https://api.github.com/graphql?access_token=${config.githubToken}`;
+import { getBasicInfoFromGithub } from '../lib/util';
 
 export const asyncMiddleware = async (req, res, next) => {
-  const client = new GraphQLClient(endpoint,{
-    headers: {
-      Authorization: `bearer ${config.githubToken}`
-    }
-  } );
-
-  const query = `
-  {query: 
-    viewer {
-      repositories(first: 100) {
-        nodes {
-          name
-        }
-      }
-    }
-  }`;
-
-  req.githubResponse = await client.request(query);
+  
+  req.githubResponse = await getBasicInfoFromGithub();
 
   next();
 };
