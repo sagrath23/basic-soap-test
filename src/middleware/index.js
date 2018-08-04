@@ -1,43 +1,37 @@
 import { Router } from 'express';
-import fetch from 'node-fetch';
+import { GraphQLClient } from 'graphql-request';
+import config from '../config.json';
 
 
-const endpoint = 'https://api.github.com/graphql';
+const endpoint = `https://api.github.com/graphql?access_token=${config.githubToken}`;
 
 export const asyncMiddleware = async () => {
-    const { status, body } = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 
-			'Content-Type': 'application/json',
-        body: JSON.stringify({query: `viewer {
-            repositories(first: 100) {
-              edges {
-                repository:node {
-                  name
-        
-                  issues(first: 100) {
-                    totalCount
-                    edges {
-                      node {
-                        title
-                        bodyHTML
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }`})
-	});
-	console.log(status, 'status in middleware');
-    console.log(body, 'body in middleware');
-    return {status, body};
+  const client = new GraphQLClient(endpoint,{
+    headers: {
+      Authorization: `bearer ${config.githubToken}`
+    }
+  } );
+
+  const query = `
+  {query: 
+    viewer {
+      repositories(first: 100) {
+        nodes {
+          name
+        }
+      }
+    }
+  }`;
+
+  const result = await client.request(query);
+
+  return result;
 };
 
 export default ({ config, db }) => {
-	let routes = Router();
+  let routes = Router();
 
-	// add middleware here
+  // add middleware here
 
-	return routes;
+  return routes;
 }
