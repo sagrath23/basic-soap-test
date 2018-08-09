@@ -41,8 +41,19 @@ export const getBasicInfoFromGithub = async () => {
 						refs (refPrefix:"refs/heads/"){
 							totalCount
 						}
-						issues (states: [OPEN]) {
+						openIssues: issues (first: 100, states: [OPEN]) {
 							totalCount
+							nodes{
+								title
+								publishedAt
+							} 
+						}
+						closedIssues: issues (first: 100, states: [CLOSED]) {
+							totalCount
+							nodes{
+								title
+								publishedAt
+							}
 						}
 					}
 				}
