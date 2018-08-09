@@ -47,6 +47,12 @@ export const getBasicInfoFromGithub = async () => {
 					}
 				}
 			}
+			rateLimit{
+				cost
+				limit
+				nodeCount
+				remaining
+			}
 	  }`;
 
 	return await client.request(query);
