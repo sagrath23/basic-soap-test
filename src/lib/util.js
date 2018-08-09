@@ -31,21 +31,22 @@ export const getBasicInfoFromGithub = async () => {
 	});
 
 	const query = `
-	  {query: 
-		viewer {
-		  repositories(first: 100) {
-			totalCount
-			nodes {
-				nameWithOwner
-				refs (first: 100, refPrefix:"refs/heads/"){
+	  {
+			query: 
+			organization(login: "${config.organizationName}") {
+				repositories (first: 100) {
+					totalCount
 					nodes {
-					  name
-					  id
+						nameWithOwner
+						refs (refPrefix:"refs/heads/"){
+							totalCount
+						}
+						issues (states: [OPEN]) {
+							totalCount
+						}
 					}
-				} 
+				}
 			}
-		  }
-		}
 	  }`;
 
 	return await client.request(query);
