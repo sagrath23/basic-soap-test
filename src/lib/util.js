@@ -44,6 +44,14 @@ export const getBasicInfoFromGithub = async () => {
 						pullRequests (first: 100) {
 							totalCount
 						}
+						languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
+							edges {
+							  size
+							  node {
+								name
+							  }
+							}
+						}
 						openIssues: issues (first: 100, states: [OPEN]) {
 							totalCount
 							nodes{
