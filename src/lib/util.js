@@ -88,39 +88,61 @@ export const searchComponentsBasicInfoFromGithub = async () => {
   });
 
   const query = `
-	query GetRepositoryBasicInfo($login: String!) {
+	query GetRepositoryBasicInfo($login: String!, $repositoriesName: String!) {
     repositoryOwner(login: $login) {
-      repositories (first: 100) {
-				totalCount
-				nodes {
-					nameWithOwner
-					refs (refPrefix:"refs/heads/"){
-						totalCount
-					}
-					pullRequests (first: 100) {
-						totalCount
-					}
-					languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
-						edges {
-							size
-							node {
-							name
+      repository (name: $repositoriesName) {
+				nameWithOwner
+				defaultBranchRef {
+					name
+					target {
+						... on Commit {
+							history (first:1) {
+								edges{
+									node{
+										... on Commit {
+											committedDate
+										}
+									}
+								}
 							}
 						}
 					}
-					openIssues: issues (first: 100, states: [OPEN]) {
-						totalCount
-						nodes{
-							title
-							publishedAt
-						} 
+				}
+				#validate how to filter branches per state (master & support)
+				refs (refPrefix:"refs/heads/"){
+					totalCount
+				}
+				openPullRequests: pullRequests (states: [OPEN]) {
+					totalCount
+				}
+				pullRequestInTheLastMonth: pullRequests (first: 100, states: [MERGED]) {
+					totalCount
+					nodes {
+						id
+						createdAt
+						mergedAt
 					}
-					closedIssues: issues (first: 100, states: [CLOSED]) {
-						totalCount
-						nodes{
-							title
-							publishedAt
+				}
+				languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
+					edges {
+						size
+						node {
+						name
 						}
+					}
+				}
+				openIssues: issues (first: 100, states: [OPEN]) {
+					totalCount
+					nodes{
+						title
+						publishedAt
+					} 
+				}
+				closedIssues: issues (first: 100, states: [CLOSED]) {
+					totalCount
+					nodes{
+						title
+						publishedAt
 					}
 				}
 			}
@@ -134,7 +156,8 @@ export const searchComponentsBasicInfoFromGithub = async () => {
   }`;
 	
 	const variables ={
-		login: config.organizationName
+		login: config.organizationName,
+		repositoriesName: config.repositoryName
 	} 
 
   return await client.request(query, variables);
