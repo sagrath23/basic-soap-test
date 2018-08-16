@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { getBasicInfoFromGithub } from '../lib/util';
+import { searchComponentsBasicInfoFromGithub } from '../lib/util';
 
 export const asyncMiddleware = async (req, res, next) => {
   
-  req.githubResponse = await getBasicInfoFromGithub();
-
+  // req.githubResponse = await getBasicInfoFromGithub();
+  req.githubResponse = await searchComponentsBasicInfoFromGithub();
   next();
 };
 
