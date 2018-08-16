@@ -88,38 +88,42 @@ export const searchComponentsBasicInfoFromGithub = async () => {
   });
 
   const query = `
-	query GetRepositoryIssues($name: String!, $login: String!) {
+	query GetRepositoryBasicInfo($login: String!) {
     repositoryOwner(login: $login) {
-      repository(name: $name) {
-				refs (refPrefix:"refs/heads/"){
-					totalCount
-				}
-				pullRequests (first: 100) {
-					totalCount
-				}
-				languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
-					edges {
-						size
-						node {
-						name
+      repositories (first: 100) {
+				totalCount
+				nodes {
+					nameWithOwner
+					refs (refPrefix:"refs/heads/"){
+						totalCount
+					}
+					pullRequests (first: 100) {
+						totalCount
+					}
+					languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
+						edges {
+							size
+							node {
+							name
+							}
+						}
+					}
+					openIssues: issues (first: 100, states: [OPEN]) {
+						totalCount
+						nodes{
+							title
+							publishedAt
+						} 
+					}
+					closedIssues: issues (first: 100, states: [CLOSED]) {
+						totalCount
+						nodes{
+							title
+							publishedAt
 						}
 					}
 				}
-				openIssues: issues (first: 100, states: [OPEN]) {
-					totalCount
-					nodes{
-						title
-						publishedAt
-					} 
-				}
-				closedIssues: issues (first: 100, states: [CLOSED]) {
-					totalCount
-					nodes{
-						title
-						publishedAt
-					}
-				}
-      }
+			}
     }
     rateLimit{
       cost
@@ -130,7 +134,6 @@ export const searchComponentsBasicInfoFromGithub = async () => {
   }`;
 	
 	const variables ={
-		name: config.repositoryName,
 		login: config.organizationName
 	} 
 
