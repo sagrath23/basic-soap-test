@@ -1,7 +1,9 @@
 import { version } from '../../package.json';
 import { Router } from 'express';
 import facets from './facets';
-import { asyncMiddleware } from '../middleware';
+import { 
+	asyncUsingBasicModelMiddleware,
+	asyncUsingSearchMiddleware } from '../middleware';
 
 export default ({ config, db }) => {
 	let api = Router();
@@ -9,8 +11,13 @@ export default ({ config, db }) => {
 	// mount the facets resource
 	api.use('/facets', facets({ config, db }));
 
-	//graphql resources
-	api.use('/graphql', asyncMiddleware, (req, res) => {
+	//graphql using default model resources
+	api.use('/graphql/model', asyncUsingBasicModelMiddleware, (req, res) => {
+		res.json({test: req.githubResponse});
+	});
+
+	//graphql using search resources
+	api.use('/graphql/search', asyncUsingSearchMiddleware, (req, res) => {
 		res.json({test: req.githubResponse});
 	});
 

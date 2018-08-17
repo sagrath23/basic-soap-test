@@ -1,12 +1,17 @@
 import { Router } from 'express';
-import { searchComponentsBasicInfoFromGithub } from '../lib/util';
+import { 
+  getBasicInfoFromGithub,
+  searchComponentsBasicInfoFromGithub } from '../lib/util';
 
-export const asyncMiddleware = async (req, res, next) => {
-  
-  // req.githubResponse = await getBasicInfoFromGithub();
+export const asyncUsingSearchMiddleware = async (req, res, next) => {
   req.githubResponse = await searchComponentsBasicInfoFromGithub();
   next();
 };
+
+export const asyncUsingBasicModelMiddleware = async (req, res, next) =>{
+  req.githubResponse = await getBasicInfoFromGithub();
+  next();
+}; 
 
 export default ({ config, db }) => {
   let routes = Router();

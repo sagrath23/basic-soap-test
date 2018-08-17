@@ -88,10 +88,12 @@ export const searchComponentsBasicInfoFromGithub = async () => {
   });
 
   const query = `
-	query GetRepositoryBasicInfo($login: String!, $repositoriesName: String!) {
+	query GetRepositoryBasicInfo($login: String!, $repositoriesName: String!, $lastMonthInitialDate: DateTime!) {
     repositoryOwner(login: $login) {
       repository (name: $repositoriesName) {
+      	#repository name
 				nameWithOwner
+      	# defaultBranch name & last update date
 				defaultBranchRef {
 					name
 					target {
@@ -108,36 +110,54 @@ export const searchComponentsBasicInfoFromGithub = async () => {
 						}
 					}
 				}
+      	#active branches
 				#validate how to filter branches per state (master & support)
 				refs (refPrefix:"refs/heads/"){
 					totalCount
 				}
+      	#open pull requests
 				openPullRequests: pullRequests (states: [OPEN]) {
 					totalCount
 				}
-				pullRequestInTheLastMonth: pullRequests (first: 100, states: [MERGED]) {
-					totalCount
-					nodes {
-						id
-						createdAt
-						mergedAt
+				#last month's pull requests
+				#TODO: improve selection here
+				pullRequestInTheLastMonth: pullRequests(last: 30, states: [MERGED]) {
+					edges {
+						node {
+							title
+							number
+							createdAt
+							timeline(last: 10, since: $lastMonthInitialDate) {
+								edges {
+									node {
+										__typename
+										... on MergedEvent{
+											createdAt
+										}
+									}
+								}
+							}
+						}
 					}
-				}
-				languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
+      	}
+				#languages info
+      	languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
 					edges {
 						size
 						node {
-						name
+							name
 						}
 					}
 				}
-				openIssues: issues (first: 100, states: [OPEN]) {
+				#open issues
+      	openIssues: issues (first: 100, states: [OPEN]) {
 					totalCount
 					nodes{
 						title
 						publishedAt
 					} 
 				}
+      	#closed issues
 				closedIssues: issues (first: 100, states: [CLOSED]) {
 					totalCount
 					nodes{
@@ -157,7 +177,8 @@ export const searchComponentsBasicInfoFromGithub = async () => {
 	
 	const variables ={
 		login: config.organizationName,
-		repositoriesName: config.repositoryName
+		repositoriesName: config.repositoryName,
+		lastMonthInitialDate: '2018-07-16T00:00:01Z'
 	} 
 
   return await client.request(query, variables);
