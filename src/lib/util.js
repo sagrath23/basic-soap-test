@@ -30,52 +30,72 @@ export const getBasicInfoFromGithub = async () => {
     }
   });
 
-  const query = `
-		{
-			query: 
-			organization(login: "${config.organizationName}") {
-				repositories (first: 100) {
-					totalCount
-					nodes {
-						nameWithOwner
-						refs (refPrefix:"refs/heads/"){
-							totalCount
-						}
-						pullRequests (first: 100) {
-							totalCount
-						}
-						languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
-							edges {
-							  size
-							  node {
-								name
-							  }
+	const query = `
+	{
+		organization(login: "${config.organizationName}") {
+			repositories(first: 30) {
+				totalCount
+				nodes {
+					nameWithOwner
+					defaultBranchRef {
+						name
+						target {
+							... on Commit {
+								history(first: 1) {
+									edges {
+										node {
+											... on Commit {
+												committedDate
+											}
+										}
+									}
+								}
 							}
 						}
-						openIssues: issues (first: 100, states: [OPEN]) {
-							totalCount
-							nodes{
-								title
-								publishedAt
-							} 
+					}
+					refs(refPrefix: "refs/heads/") {
+						totalCount
+					}
+					openPullRequests: pullRequests(states: [OPEN]) {
+						totalCount
+					}
+					#last month's pull requests
+					#TODO: improve selection here
+					pullRequestInTheLastMonth: pullRequests(last: 30, states: [MERGED]) {
+						edges {
+							node {
+								createdAt
+								timeline(last: 10, since: "2018-07-16T00:00:01Z") {
+									edges {
+										node {
+											... on MergedEvent{
+												createdAt
+											}
+										}
+									}
+								}
+							}
 						}
-						closedIssues: issues (first: 100, states: [CLOSED]) {
-							totalCount
-							nodes{
-								title
-								publishedAt
+					}
+					languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
+						edges {
+							size
+							node {
+								name
 							}
 						}
 					}
 				}
 			}
-			rateLimit{
-				cost
-				limit
-				nodeCount
-				remaining
-			}
-	  }`;
+		}
+		rateLimit {
+			cost
+			limit
+			nodeCount
+			remaining
+		}
+	}
+	`;
 
   return await client.request(query);
 };
