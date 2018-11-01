@@ -1,17 +1,12 @@
 import { Router } from 'express';
-import { 
-  getBasicInfoFromGithub,
-  searchComponentsBasicInfoFromGithub } from '../lib/util';
+import { emitirComprobante } from '../lib/util';
 
-export const asyncUsingSearchMiddleware = async (req, res, next) => {
-  req.githubResponse = await searchComponentsBasicInfoFromGithub();
+// en esta función es donde se realiza la petición al servicio SOAP, y se agrega el resultado 
+// como propieadad del parámetro req (esto es parte del andamiaje de express.js para manejar peticiones)
+export const asyncUsingEmitirComprobanteMiddleware = async (req, res, next) => {
+  req.soapResponse = await emitirComprobante();
   next();
 };
-
-export const asyncUsingBasicModelMiddleware = async (req, res, next) =>{
-  req.githubResponse = await getBasicInfoFromGithub();
-  next();
-}; 
 
 export default ({ config, db }) => {
   let routes = Router();

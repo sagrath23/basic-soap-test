@@ -1,205 +1,22 @@
-import { GraphQLClient } from 'graphql-request';
+import * as req from 'superagent';
+import { formatoFactura } from './format';
 import config from '../config.json';
 
-/**	Creates a callback that proxies node callback style arguments to an Express Response object.
- *	@param {express.Response} res	Express HTTP Response
- *	@param {number} [status=200]	Status code to send on success
- *
- *	@example
- *		list(req, res) {
- *			collection.find({}, toRes(res));
- *		}
- */
-export function toRes(res, status = 200) {
-  return (err, thing) => {
-    if (err) return res.status(500).send(err);
-
-    if (thing && typeof thing.toObject === 'function') {
-      thing = thing.toObject();
-    }
-    res.status(status).json(thing);
-  };
-}
-
-const endpoint = `https://api.github.com/graphql`;
-
-export const getBasicInfoFromGithub = async () => {
-  const client = new GraphQLClient(endpoint, {
-    headers: {
-      Authorization: `bearer ${config.githubToken}`
-    }
-  });
-
-	const query = `
-	{
-		organization(login: "${config.organizationName}") {
-			repositories(first: 30) {
-				totalCount
-				nodes {
-					nameWithOwner
-					defaultBranchRef {
-						name
-						target {
-							... on Commit {
-								history(first: 1) {
-									edges {
-										node {
-											... on Commit {
-												committedDate
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					refs(refPrefix: "refs/heads/") {
-						totalCount
-					}
-					openPullRequests: pullRequests(states: [OPEN]) {
-						totalCount
-					}
-					#last month's pull requests
-					#TODO: improve selection here
-					pullRequestInTheLastMonth: pullRequests(last: 30, states: [MERGED]) {
-						edges {
-							node {
-								createdAt
-								timeline(last: 10, since: "2018-07-16T00:00:01Z") {
-									edges {
-										node {
-											... on MergedEvent{
-												createdAt
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
-						edges {
-							size
-							node {
-								name
-							}
-						}
-					}
-				}
-			}
-		}
-		rateLimit {
-			cost
-			limit
-			nodeCount
-			remaining
-		}
-	}
+export const emitirComprobante = async () => {
+	//este es el formato XML en el que se debe wrappear los parámetros que recibe el servicio SOAP
+	const soapRequest = `<?xml version="1.0" encoding="UTF-8"?>
+	<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://tempuri.org/">
+		<SOAP-ENV:Body>
+			<ns1:EmitirComprobante>
+				<ns1:LayOut>${formatoFactura}</ns1:LayOut>
+			</ns1:EmitirComprobante>
+		</SOAP-ENV:Body>
+	</SOAP-ENV:Envelope>
 	`;
 
-  return await client.request(query);
-};
+	// usando magia de JS, se envía la petición vía POST al servicio SOAP, seteando en los headers de la petición
+	// que se va a enviar un XML, y en el payload de la peticiòn la cadena XML que contiene los parámetros que necesita el 
+	// servicio SOAP.
+	return await req.post(config.soapEndpoint).set('Content-Type', 'text/xml').send(soapRequest);
 
-export const searchComponentsBasicInfoFromGithub = async () => {
-  const client = new GraphQLClient(endpoint, {
-    headers: {
-      Authorization: `bearer ${config.githubToken}`
-    }
-  });
-
-  const query = `
-	query GetRepositoryBasicInfo($login: String!, $repositoriesName: String!, $lastMonthInitialDate: DateTime!) {
-    repositoryOwner(login: $login) {
-      repository (name: $repositoriesName) {
-      	#repository name
-				nameWithOwner
-      	# defaultBranch name & last update date
-				defaultBranchRef {
-					name
-					target {
-						... on Commit {
-							history (first:1) {
-								edges{
-									node{
-										... on Commit {
-											committedDate
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-      	#active branches
-				#validate how to filter branches per state (master & support)
-				refs (refPrefix:"refs/heads/"){
-					totalCount
-				}
-      	#open pull requests
-				openPullRequests: pullRequests (states: [OPEN]) {
-					totalCount
-				}
-				#last month's pull requests
-				#TODO: improve selection here
-				pullRequestInTheLastMonth: pullRequests(last: 30, states: [MERGED]) {
-					edges {
-						node {
-							title
-							number
-							createdAt
-							timeline(last: 10, since: $lastMonthInitialDate) {
-								edges {
-									node {
-										__typename
-										... on MergedEvent{
-											createdAt
-										}
-									}
-								}
-							}
-						}
-					}
-      	}
-				#languages info
-      	languages(first: 3, orderBy: {field: SIZE direction: DESC}) {
-					edges {
-						size
-						node {
-							name
-						}
-					}
-				}
-				#open issues
-      	openIssues: issues (first: 100, states: [OPEN]) {
-					totalCount
-					nodes{
-						title
-						publishedAt
-					} 
-				}
-      	#closed issues
-				closedIssues: issues (first: 100, states: [CLOSED]) {
-					totalCount
-					nodes{
-						title
-						publishedAt
-					}
-				}
-			}
-    }
-    rateLimit{
-      cost
-      limit
-      nodeCount
-      remaining
-    }
-  }`;
-	
-	const variables ={
-		login: config.organizationName,
-		repositoriesName: config.repositoryName,
-		lastMonthInitialDate: '2018-07-16T00:00:01Z'
-	} 
-
-  return await client.request(query, variables);
 };

@@ -1,24 +1,19 @@
 import { version } from '../../package.json';
 import { Router } from 'express';
-import facets from './facets';
-import { 
-	asyncUsingBasicModelMiddleware,
-	asyncUsingSearchMiddleware } from '../middleware';
+import { asyncUsingEmitirComprobanteMiddleware } from '../middleware';
 
+// aquí es donde se definen las rutas en las que responden los servicios creados con express.js
 export default ({ config, db }) => {
 	let api = Router();
 
-	// mount the facets resource
-	api.use('/facets', facets({ config, db }));
-
-	//graphql using default model resources
-	api.use('/graphql/model', asyncUsingBasicModelMiddleware, (req, res) => {
-		res.json({test: req.githubResponse});
-	});
-
-	//graphql using search resources
-	api.use('/graphql/search', asyncUsingSearchMiddleware, (req, res) => {
-		res.json({test: req.githubResponse});
+	// aquí definimos el endpoint que usarémos para lanzar la petición al servicio SOAP
+	// cuando se envía la petición desde el browser, express.js la recibe, la parsea y verifica que 
+	// endpoint debe atenderla, cuando lo identifica, ejecuta el middleware (que es el que lanza la 
+	// petición al servicio SOAP) y cuando recibe la respuesta, ejecuta la tercera función recibida 
+	// como parámetro por api.use
+	api.use('/soap/emitirComprobante', asyncUsingEmitirComprobanteMiddleware, (req, res) => {
+		// aquí, simplemente, parseamos a JSON el resultado que recibimos del servicio SOAP
+		res.json({ response: req.soapResponse});
 	});
 
 	// perhaps expose some API metadata at the root

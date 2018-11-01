@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import initializeDb from './db';
 import middleware from './middleware';
 import api from './api';
+// renombrar config.default.json a config.json, y agregar la URL del servicio SOAP, quitando el ?WSDL
 import config from './config.json';
 
 let app = express();
