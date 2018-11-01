@@ -17,6 +17,8 @@ export const emitirComprobante = async () => {
 	// usando magia de JS, se envía la petición vía POST al servicio SOAP, seteando en los headers de la petición
 	// que se va a enviar un XML, y en el payload de la peticiòn la cadena XML que contiene los parámetros que necesita el 
 	// servicio SOAP.
-	return await req.post(config.soapEndpoint).set('Content-Type', 'text/xml').send(soapRequest);
+	const response = await req.post(config.soapEndpoint).set('Content-Type', 'text/xml').send(soapRequest);
+
+	return response.text;
 
 };
